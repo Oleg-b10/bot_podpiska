@@ -2,18 +2,31 @@
 # КОНСТРУКТОР БОТА — включай/выключай что угодно
 # ═════════════════════════════════════════
 
-# Основные модули
-ENABLE_LEAD_FORM = True          # форма заявки (всегда True)
-ENABLE_LEAD_EXPORT = True        # запись в Google-таблицу через Apps Script
-ENABLE_MANAGER_NOTIFY = True     # уведомление в ЛС при новой заявке
+import os
+from dotenv import load_dotenv
+load_dotenv()  # ← читаем .env
 
-# Будущие модули (я пришлю их сразу после этого)
-ENABLE_FAQ = False               # FAQ с поиском и кнопками
-ENABLE_AUTOFUNNEL = False        # автоворонка на 5–10 сообщений
-ENABLE_ADMIN_PANEL = False       # админка: просмотр лидов + рассылка
-ENABLE_PAYMENT = False           # приём платежей (ЮKassa/СБП)
-ENABLE_STATISTICS = False        # статистика заявок
+# === ВКЛЮЧЕНИЕ МОДУЛЕЙ ===
+ENABLE_LEAD_FORM       = True
+ENABLE_LEAD_EXPORT     = True
+ENABLE_MANAGER_NOTIFY  = True
 
-# Настройки внешнего вида
-WELCOME_TEXT = "Привет! Оставь заявку на доступ 👇\\n\\nКак тебя зовут?"
-SUCCESS_TEXT = "Готово! Заявка принята ❤️\\nМенеджер свяжется в ближайшее время!"
+ENABLE_FAQ             = False
+ENABLE_AUTOFUNNEL      = False
+ENABLE_ADMIN_PANEL     = True      # ← ВКЛЮЧАЕМ АДМИНКУ И РАССЫЛКИ
+ENABLE_PAYMENT         = False
+ENABLE_STATISTICS      = False
+
+# === АДМИНЫ И МЕНЕДЖЕР (читаем из .env) ===
+ADMIN_IDS = [int(x.strip()) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
+MANAGER_ID = int(os.getenv("MANAGER_ID", "0")) if os.getenv("MANAGER_ID") else None
+
+# === ТЕКСТЫ ===
+WELCOME_TEXT = "Привет! Оставь заявку на доступ \n\nКак тебя зовут?"
+SUCCESS_TEXT = "Готово! Заявка принята \nМенеджер свяжется в ближайшее время!"
+
+# === БАЗА ДАННЫХ ===
+DATABASE_URL = "sqlite+aiosqlite:///./bot.db"
+
+# === GSHEET (если через Apps Script) ===
+GSHEET_WEB_APP_URL = os.getenv("GSHEET_URL")  # ← твоя ссылка из .env
