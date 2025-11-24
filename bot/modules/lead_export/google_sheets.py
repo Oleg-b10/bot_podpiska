@@ -1,14 +1,23 @@
-﻿import gspread
-from datetime import datetime
+﻿import requests
+import os
+from config.settings import GSHEET_URL
 
 def append_to_sheet(data: dict) -> bool:
+    if not GSHEET_URL:
+        print("Ошибка: GSHEET_URL не указан")
+        return False
+
+    payload = {
+        "name": data.get("name", ""),
+        "phone": data.get("phone", ""),
+        "email": data.get("email", ""),
+        "user_id": str(data.get("user_id", "")),
+        "username": data.get("username", "Нет")
+    }
+
     try:
-        gc = gspread.service_account(filename="credentials.json")
-        sh = gc.open_by_key("1ATlPHcQqgvrnhIVOIfZv1Pw6-1TzBkF4ZJF3QMEBKZs")
-        ws = sh.sheet1
-        row = [datetime.now().strftime("%d.%m.%Y %H:%M"), data["name"], data["phone"], data["email"], data["user_id"], data.get("username","")]
-        ws.append_row(row)
-        return True
+        r = requests.post(GSHEET_URL, json=payload, timeout=10)
+        return r.text.strip() == "OK"
     except Exception as e:
-        print("Sheets error:", e)
+        print("Ошибка отправки в Apps Script:", e)
         return False

@@ -1,23 +1,19 @@
-﻿from pydantic import BaseModel
+﻿# ═════════════════════════════════════════
+# КОНСТРУКТОР БОТА — включай/выключай что угодно
+# ═════════════════════════════════════════
 
-class Features(BaseModel):
-    faq: bool = True
-    ai_chat: bool = False
-    feedback: bool = True
-    
-    lead_capture: bool = True          # ← будем делать первым
-    lead_to_sheets: bool = True        # запись в Google Sheets
-    lead_notify_manager: bool = True   # уведомление в ЛС
-    
-    segmentation: bool = False
-    funnel: bool = False
-    mailing: bool = False
-    shop: bool = False
-    payments_yookassa: bool = False
-    payments_crypto: bool = False
-    referral: bool = False
-    edo: bool = False
-    analytics: bool = False
-    admin_panel: bool = True
+# Основные модули
+ENABLE_LEAD_FORM = True          # форма заявки (всегда True)
+ENABLE_LEAD_EXPORT = True        # запись в Google-таблицу через Apps Script
+ENABLE_MANAGER_NOTIFY = True     # уведомление в ЛС при новой заявке
 
-features = Features()
+# Будущие модули (я пришлю их сразу после этого)
+ENABLE_FAQ = False               # FAQ с поиском и кнопками
+ENABLE_AUTOFUNNEL = False        # автоворонка на 5–10 сообщений
+ENABLE_ADMIN_PANEL = False       # админка: просмотр лидов + рассылка
+ENABLE_PAYMENT = False           # приём платежей (ЮKassa/СБП)
+ENABLE_STATISTICS = False        # статистика заявок
+
+# Настройки внешнего вида
+WELCOME_TEXT = "Привет! Оставь заявку на доступ 👇\\n\\nКак тебя зовут?"
+SUCCESS_TEXT = "Готово! Заявка принята ❤️\\nМенеджер свяжется в ближайшее время!"
