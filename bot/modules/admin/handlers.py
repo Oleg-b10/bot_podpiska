@@ -1,14 +1,20 @@
-﻿# bot/modules/admin/handlers.py — ПОЛНЫЙ ФИНАЛЬНЫЙ КОД БЕЗ ОШИБОК (2025)
+﻿# bot/modules/admin/handlers.py — ПОЛНЫЙ РАБОЧИЙ КОД 2025 (статистика + рассылка + шаблоны + кнопки назад)
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile
+from aiogram.types import (
+    Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, BufferedInputFile
+)
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from config.features import ADMIN_IDS
-from database.models import async_session, Mailing
+from database.models import async_session, User, Mailing
 from bot.modules.mailing.scheduler import schedule_mailing
 from bot.modules.mailing.sender import render_template
 from bot.core.loader import bot
+from datetime import datetime, timedelta
+from sqlalchemy import select, func
+import matplotlib.pyplot as plt
+import io
 import os
 import aiofiles
 
@@ -25,22 +31,104 @@ class CreateMailing(StatesGroup):
     confirm = State()
     save_template_name = State()
 
-# === АДМИНКА ===
+# === АДМИН-ПАНЕЛЬ ===
 @router.message(Command("admin"), F.from_user.id.in_(ADMIN_IDS))
 async def admin_menu(message: Message):
     kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Статистика", callback_data="stats")],
         [InlineKeyboardButton(text="Создать рассылку", callback_data="new_mailing")],
     ])
     await message.answer("Админ-панель v2025", reply_markup=kb)
 
-# === НАЧАЛО ===
+# === СТАТИСТИКА ===
+@router.callback_query(F.data == "stats")
+async def show_stats(call: CallbackQuery):
+    async with async_session() as session:
+        total_users = (await session.execute(select(func.count(User.id)))).scalar_one()
+
+        today = datetime.utcnow().date()
+        week_ago = today - timedelta(days=7)
+        month_ago = today - timedelta(days=30)
+
+        users_today = (await session.execute(
+            select(func.count(User.id)).where(func.date(User.joined_at) == today)
+        )).scalar_one()
+
+        users_week = (await session.execute(
+            select(func.count(User.id)).where(User.joined_at >= week_ago)
+        )).scalar_one()
+
+        users_month = (await session.execute(
+            select(func.count(User.id)).where(User.joined_at >= month_ago)
+        )).scalar_one()
+
+        leads_total = leads_today = leads_week = leads_month = 0
+
+        conv_today = round((leads_today / users_today * 100) if users_today else 0, 1)
+        conv_week = round((leads_week / users_week * 100) if users_week else 0, 1)
+        conv_month = round((leads_month / users_month * 100) if users_month else 0, 1)
+
+        text = f"""СТАТИСТИКА БОТА
+
+Всего пользователей: <b>{total_users}</b>
+• За сегодня: <b>+{users_today}</b>
+• За неделю: <b>+{users_week}</b>
+• За месяц: <b>+{users_month}</b>
+
+Заявки (лиды): <b>{leads_total}</b>
+• Сегодня: <b>+{leads_today}</b>
+• Неделя: <b>+{leads_week}</b>
+• Месяц: <b>+{leads_month}</b>
+
+Конверсия:
+• Сегодня: <b>{conv_today}%</b>
+• Неделя: <b>{conv_week}%</b>
+• Месяц: <b>{conv_month}%</b>"""
+
+        fig, ax = plt.subplots(figsize=(9, 5))
+        periods = ["Сегодня", "Неделя", "Месяц"]
+        values = [users_today, users_week, users_month]
+        colors = ["#00ff88", "#0088ff", "#ff8800"]
+        bars = ax.bar(periods, values, color=colors)
+        ax.set_title("Новые пользователи", fontsize=16, pad=20)
+        ax.set_ylabel("Количество")
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height + max(values)*0.01,
+                    f'{int(height)}', ha='center', va='bottom', fontsize=12)
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
+        buffer.seek(0)
+        plt.close(fig)
+
+        photo = BufferedInputFile(buffer.read(), filename="stats.png")
+        await call.message.answer_photo(photo, caption=text, parse_mode="HTML")
+    await call.answer()
+
+# === НАЧАЛО РАССЫЛКИ ===
 @router.callback_query(F.data == "new_mailing")
 async def choose_source(call: CallbackQuery, state: FSMContext):
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Вручную", callback_data="source_manual")],
         [InlineKeyboardButton(text="Из шаблона", callback_data="source_template")],
+        [InlineKeyboardButton(text="Назад", callback_data="back_to_admin")],
     ])
     await call.message.edit_text("Как создать рассылку?", reply_markup=kb)
+    await call.answer()
+
+@router.callback_query(F.data == "back_to_admin")
+async def back_to_admin(call: CallbackQuery):
+    await admin_menu(call.message)
+    await call.answer()
+
+# === ВРУЧНУЮ ===
+@router.callback_query(F.data == "source_manual")
+async def manual_start(call: CallbackQuery, state: FSMContext):
+    await state.update_data(source="manual")
+    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Назад", callback_data="back_to_source")]])
+    await call.message.edit_text("Напиши текст рассылки:", reply_markup=kb)
+    await state.set_state(CreateMailing.text)
     await call.answer()
 
 # === ИЗ ШАБЛОНА ===
@@ -70,6 +158,12 @@ async def list_templates(call: CallbackQuery, state: FSMContext):
     await state.set_state(CreateMailing.template)
     await call.answer()
 
+@router.callback_query(F.data == "back_to_source")
+async def back_to_source(call: CallbackQuery, state: FSMContext):
+    await choose_source(call, state)
+    await call.answer()
+
+# === ВЫБОР ШАБЛОНА ===
 @router.callback_query(F.data.startswith("tpl_select:"))
 async def template_chosen(call: CallbackQuery, state: FSMContext):
     template_name = call.data.split(":")[1]
@@ -86,7 +180,7 @@ async def template_chosen(call: CallbackQuery, state: FSMContext):
 
     if os.path.exists(photo_path):
         await call.message.answer_photo(
-            FSInputFile(photo_path),
+            BufferedInputFile.from_path(photo_path),
             caption=f"<b>Шаблон: {template_name}</b>\n\nТак будет выглядеть:\n\n{preview_text}",
             parse_mode="HTML",
             reply_markup=kb
@@ -99,6 +193,12 @@ async def template_chosen(call: CallbackQuery, state: FSMContext):
         )
     await call.answer()
 
+@router.callback_query(F.data == "back_to_template_list")
+async def back_to_template_list(call: CallbackQuery, state: FSMContext):
+    await list_templates(call, state)
+    await call.answer()
+
+# === ИСПОЛЬЗОВАТЬ КАК ЕСТЬ ===
 @router.callback_query(F.data == "tpl_use_as_is")
 async def use_as_is(call: CallbackQuery, state: FSMContext):
     data = await state.get_data()
@@ -107,13 +207,14 @@ async def use_as_is(call: CallbackQuery, state: FSMContext):
     photo_file_id = None
     photo_path = f"bot/modules/mailing/templates/{template_name}.jpg"
     if os.path.exists(photo_path):
-        sent = await call.message.answer_photo(FSInputFile(photo_path))
+        sent = await call.message.answer_photo(BufferedInputFile.from_path(photo_path))
         photo_file_id = sent.photo[-1].file_id
     
     await state.update_data(photo=photo_file_id)
-    await ask_button(call.message, state)
+    await show_final_preview(call.message, state)
     await call.answer()
 
+# === РЕДАКТИРОВАТЬ ШАБЛОН ===
 @router.callback_query(F.data == "tpl_edit")
 async def edit_template_start(call: CallbackQuery, state: FSMContext):
     data = await state.get_data()
@@ -133,30 +234,10 @@ async def edit_template_start(call: CallbackQuery, state: FSMContext):
     await state.set_state(CreateMailing.text)
     await call.answer()
 
-# === КНОПКИ НАЗАД ===
-@router.callback_query(F.data == "back_to_source")
-async def back_to_source(call: CallbackQuery, state: FSMContext):
-    await choose_source(call, state)
-    await call.answer()
-
-@router.callback_query(F.data == "back_to_template_list")
-async def back_to_template_list(call: CallbackQuery, state: FSMContext):
-    await list_templates(call, state)
-    await call.answer()
-
 @router.callback_query(F.data == "back_to_template")
 async def back_to_template(call: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     await template_chosen(call, state)
-    await call.answer()
-
-# === ВРУЧНУЮ ===
-@router.callback_query(F.data == "source_manual")
-async def manual_start(call: CallbackQuery, state: FSMContext):
-    await state.update_data(source="manual")
-    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Назад", callback_data="back_to_source")]])
-    await call.message.edit_text("Напиши текст рассылки:", reply_markup=kb)
-    await state.set_state(CreateMailing.text)
     await call.answer()
 
 # === ОБЩИЙ FSM ===
