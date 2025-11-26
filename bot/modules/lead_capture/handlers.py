@@ -1,8 +1,8 @@
-<<<<<<< HEAD
-﻿from aiogram import Router, F
+
+from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-=======
-﻿# bot/modules/lead_capture/handlers.py — 100% РАБОЧИЙ 2025 (с сохранением в базу)
+
+# bot/modules/lead_capture/handlers.py — 100% РАБОЧИЙ 2025 (с сохранением в базу)
 from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.filters import CommandStart
@@ -14,11 +14,11 @@ from database.models import async_session, User
 from sqlalchemy import select
 from datetime import datetime
 import re
->>>>>>> a9e0c52b4eceb78be98320ea53bfef732ec2a7fe
+
 
 router = Router(name="lead_capture")
 
-<<<<<<< HEAD
+
 # Храним данные пользователей
 user_data = {}
 
@@ -90,7 +90,7 @@ async def handle_lead_steps(message: Message):
 
         # Чистим данные
         del user_data[user_id]
-=======
+
 @router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
     await message.answer(
@@ -160,4 +160,4 @@ async def get_email(message: Message, state: FSMContext):
         await message.answer("Техническая ошибка, попробуй позже.")
     
     await state.clear()
->>>>>>> a9e0c52b4eceb78be98320ea53bfef732ec2a7fe
+
