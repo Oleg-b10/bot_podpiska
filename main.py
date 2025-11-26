@@ -28,15 +28,15 @@ if ENABLE_ADMIN_PANEL:
 from database.models import create_tables
 
 async def main():
-<<<<<<< HEAD
+
     print("Бот запущен!")
     print(f"FAQ: {'ВКЛЮЧЁН' if ENABLE_FAQ else 'ВЫКЛЮЧЕН'}")
-=======
+
     await create_tables()
     if ENABLE_ADMIN_PANEL:
         start_scheduler()
     print("Бот запущен — лиды + рассылки + админка")
->>>>>>> a9e0c52b4eceb78be98320ea53bfef732ec2a7fe
+
     await dp.start_polling(bot)
 
 if __name__ == "__main__":

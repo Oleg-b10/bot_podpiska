@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-﻿ENABLE_LEAD_CAPTURE = True
-ENABLE_LEAD_EXPORT = True
-ENABLE_FAQ = True
-=======
 ﻿# ═════════════════════════════════════════
 # КОНСТРУКТОР БОТА — включай/выключай что угодно
 # ═════════════════════════════════════════
@@ -16,7 +11,7 @@ ENABLE_LEAD_FORM       = True
 ENABLE_LEAD_EXPORT     = True
 ENABLE_MANAGER_NOTIFY  = True
 
-ENABLE_FAQ             = False
+ENABLE_FAQ             = True
 ENABLE_AUTOFUNNEL      = False
 ENABLE_ADMIN_PANEL     = True      # ← ВКЛЮЧАЕМ АДМИНКУ И РАССЫЛКИ
 ENABLE_PAYMENT         = False
@@ -35,4 +30,3 @@ DATABASE_URL = "postgresql+asyncpg://postgres:root@localhost:5432/bottest"
 
 # === GSHEET (если через Apps Script) ===
 GSHEET_WEB_APP_URL = os.getenv("GSHEET_URL")  # ← твоя ссылка из .env
->>>>>>> a9e0c52b4eceb78be98320ea53bfef732ec2a7fe
