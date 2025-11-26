@@ -1,19 +1,3 @@
-﻿# ═════════════════════════════════════════
-# КОНСТРУКТОР БОТА — включай/выключай что угодно
-# ═════════════════════════════════════════
-
-# Основные модули
-ENABLE_LEAD_FORM = True          # форма заявки (всегда True)
-ENABLE_LEAD_EXPORT = True        # запись в Google-таблицу через Apps Script
-ENABLE_MANAGER_NOTIFY = True     # уведомление в ЛС при новой заявке
-
-# Будущие модули (я пришлю их сразу после этого)
-ENABLE_FAQ = False               # FAQ с поиском и кнопками
-ENABLE_AUTOFUNNEL = False        # автоворонка на 5–10 сообщений
-ENABLE_ADMIN_PANEL = False       # админка: просмотр лидов + рассылка
-ENABLE_PAYMENT = False           # приём платежей (ЮKassa/СБП)
-ENABLE_STATISTICS = False        # статистика заявок
-
-# Настройки внешнего вида
-WELCOME_TEXT = "Привет! Оставь заявку на доступ 👇\\n\\nКак тебя зовут?"
-SUCCESS_TEXT = "Готово! Заявка принята ❤️\\nМенеджер свяжется в ближайшее время!"
+﻿ENABLE_LEAD_CAPTURE = True
+ENABLE_LEAD_EXPORT = True
+ENABLE_FAQ = True
