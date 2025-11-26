@@ -26,7 +26,7 @@ WELCOME_TEXT = "Привет! Оставь заявку на доступ \n\nК
 SUCCESS_TEXT = "Готово! Заявка принята \nМенеджер свяжется в ближайшее время!"
 
 # === БАЗА ДАННЫХ ===
-DATABASE_URL = "sqlite+aiosqlite:///./bot.db"
+DATABASE_URL = "postgresql+asyncpg://postgres:root@localhost:5432/bottest"
 
 # === GSHEET (если через Apps Script) ===
 GSHEET_WEB_APP_URL = os.getenv("GSHEET_URL")  # ← твоя ссылка из .env

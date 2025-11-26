@@ -1,4 +1,4 @@
-﻿# bot/modules/admin/handlers.py — ПОЛНЫЙ РАБОЧИЙ КОД 2025 (статистика + рассылка + шаблоны + кнопки назад)
+﻿# bot/modules/admin/handlers.py — ПОЛНЫЙ РАБОЧИЙ КОД 2025 (статистика + рассылка + всё)
 from aiogram import Router, F
 from aiogram.types import (
     Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, BufferedInputFile
@@ -40,7 +40,7 @@ async def admin_menu(message: Message):
     ])
     await message.answer("Админ-панель v2025", reply_markup=kb)
 
-# === СТАТИСТИКА ===
+# === СТАТИСТИКА С КНОПКОЙ "НАЗАД" ===
 @router.callback_query(F.data == "stats")
 async def show_stats(call: CallbackQuery):
     async with async_session() as session:
@@ -103,7 +103,17 @@ async def show_stats(call: CallbackQuery):
         plt.close(fig)
 
         photo = BufferedInputFile(buffer.read(), filename="stats.png")
-        await call.message.answer_photo(photo, caption=text, parse_mode="HTML")
+
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="Назад в меню", callback_data="back_to_admin")]
+        ])
+
+        await call.message.answer_photo(photo, caption=text, parse_mode="HTML", reply_markup=kb)
+    await call.answer()
+
+@router.callback_query(F.data == "back_to_admin")
+async def back_to_admin(call: CallbackQuery):
+    await admin_menu(call.message)
     await call.answer()
 
 # === НАЧАЛО РАССЫЛКИ ===
@@ -115,11 +125,6 @@ async def choose_source(call: CallbackQuery, state: FSMContext):
         [InlineKeyboardButton(text="Назад", callback_data="back_to_admin")],
     ])
     await call.message.edit_text("Как создать рассылку?", reply_markup=kb)
-    await call.answer()
-
-@router.callback_query(F.data == "back_to_admin")
-async def back_to_admin(call: CallbackQuery):
-    await admin_menu(call.message)
     await call.answer()
 
 # === ВРУЧНУЮ ===
