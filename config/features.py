@@ -11,7 +11,7 @@ ENABLE_LEAD_FORM       = True
 ENABLE_LEAD_EXPORT     = True
 ENABLE_MANAGER_NOTIFY  = True
 
-ENABLE_FAQ             = False
+ENABLE_FAQ             = True
 ENABLE_AUTOFUNNEL      = False
 ENABLE_ADMIN_PANEL     = True      # ← ВКЛЮЧАЕМ АДМИНКУ И РАССЫЛКИ
 ENABLE_PAYMENT         = False
