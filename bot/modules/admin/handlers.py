@@ -31,7 +31,7 @@ class CreateMailing(StatesGroup):
     confirm = State()
     save_template_name = State()
 
-# === АДМИН-ПАНЕЛЬ ===
+# === АДМИН-ПАНЕЛЬ (ТОЛЬКО ОДИН ХЕНДЛЕР!) ===
 @router.message(Command("admin"), F.from_user.id.in_(ADMIN_IDS))
 async def admin_menu(message: Message):
     kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -40,6 +40,14 @@ async def admin_menu(message: Message):
     ])
     await message.answer("Админ-панель v2025", reply_markup=kb)
 
+# === ДЛЯ ОТЛАДКИ (временно) ===
+@router.message(Command("admin"))
+async def admin_debug(message: Message):
+    await message.answer(
+        f"Твой ID: {message.from_user.id}\n"
+        f"ADMIN_IDS: {ADMIN_IDS}\n"
+        f"Ты админ? {'ДА' if message.from_user.id in ADMIN_IDS else 'НЕТ'}"
+    )
 # === СТАТИСТИКА С КНОПКОЙ "НАЗАД" ===
 @router.callback_query(F.data == "stats")
 async def show_stats(call: CallbackQuery):
