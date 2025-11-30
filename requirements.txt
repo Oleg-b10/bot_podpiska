@@ -4,6 +4,7 @@ pydantic==2.9.2
 pydantic-settings==2.5.2
 python-dotenv==1.0.1
 matplotlib
+python==3.12.3
 
 # === БД и миграции ===
 sqlalchemy[asyncio]==2.0.35
@@ -32,3 +33,4 @@ yookassa
 # === Опционально, но пригодится позже ===
 redis==5.0.8             # для FSM-хранилища на проде
 aioredis==2.0.1          # если захотим Redis
+fastapi uvicorn

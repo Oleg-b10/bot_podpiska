@@ -1,4 +1,4 @@
-﻿from aiogram import Router, F
+from aiogram import Router, F
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 
 router = Router(name="main_menu")
