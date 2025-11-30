@@ -6,6 +6,7 @@ from config.features import *
 from bot.modules.main_menu.handlers import router as menu_router          # твой старт + инлайн
 from bot.modules.faq.handlers import router as faq_router                # твой FAQ
 from bot.modules.lead_capture.handlers import router as lead_router      # твои заявки
+from bot.modules.payments import payments_router
 
 # === АДМИНКА ОТ ДРУГА ===
 if ENABLE_ADMIN_PANEL:
@@ -43,6 +44,11 @@ async def main():
     print("Бот полностью запущен!")
     print(f"Админ-панель: {'ВКЛЮЧЕНА' if ENABLE_ADMIN_PANEL else 'ВЫКЛЮЧЕНА'}")
     await dp.start_polling(bot)
+    
+    
+    if ENABLE_PAYMENT:
+        dp.include_router(payments_router)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

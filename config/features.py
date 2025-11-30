@@ -14,7 +14,7 @@ ENABLE_MANAGER_NOTIFY  = True
 ENABLE_FAQ             = True
 ENABLE_AUTOFUNNEL      = False
 ENABLE_ADMIN_PANEL     = True      # ← ВКЛЮЧАЕМ АДМИНКУ И РАССЫЛКИ
-ENABLE_PAYMENT         = False
+ENABLE_PAYMENT         = True
 ENABLE_STATISTICS      = False
 
 # === АДМИНЫ И МЕНЕДЖЕР (читаем из .env) ===
