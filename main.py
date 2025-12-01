@@ -3,52 +3,52 @@ from bot.core.loader import dp, bot
 from config.features import *
 
 # === ВСЕ МОДУЛИ ===
-from bot.modules.main_menu.handlers import router as menu_router          # твой старт + инлайн
-from bot.modules.faq.handlers import router as faq_router                # твой FAQ
-from bot.modules.lead_capture.handlers import router as lead_router      # твои заявки
-from bot.modules.payments import payments_router
+from bot.modules.main_menu.handlers import router as menu_router
+if ENABLE_FAQ:
+    from bot.modules.faq.handlers import router as faq_router
+from bot.modules.lead_capture.handlers import router as lead_router
 
-# === АДМИНКА ОТ ДРУГА ===
+# === АДМИНКА + РАССЫЛКИ ===
 if ENABLE_ADMIN_PANEL:
     from bot.modules.admin.handlers import router as admin_router
     dp.include_router(admin_router)
 
-# === ПОДКЛЮЧАЕМ В ПРАВИЛЬНОМ ПОРЯДКЕ ===
-dp.include_router(menu_router)    # старт и инлайн-меню
+# === ПОДКЛЮЧАЕМ РОУТЕРЫ ===
+dp.include_router(menu_router)
 if ENABLE_FAQ:
     dp.include_router(faq_router)
-dp.include_router(lead_router)    # заявки (должны быть после меню!)
+dp.include_router(lead_router)
+# feedback_router больше НЕ НУЖЕН — вся поддержка теперь в main_menu
 
-# === БАЗА ДАННЫХ И ПЛАНИРОВЩИК ===
+# === БАЗА И ПЛАНИРОВЩИК ===
 from database.models import create_tables
 
-# Если включение планировщика рассылок (только если админка включена)
 if ENABLE_ADMIN_PANEL:
     try:
         from bot.modules.mailing.scheduler import start_scheduler
     except ImportError:
-        print("scheduler.py не найден — рассылки не будут работать")
+        print("scheduler.py не найден")
 
 async def main():
-    print("Запуск бота...")
-    await create_tables()  # создаём таблицы (User, Mailing и т.д.)
+    print("Бот-подписка 2025 — финальная версия без оплаты")
+    await create_tables()
 
-    # Запускаем APScheduler ТОЛЬКО ОДИН РАЗ
     if ENABLE_ADMIN_PANEL:
         try:
             start_scheduler()
-            print("Планировщик рассылок запущен")
-        except Exception as e:
-            print(f"Не удалось запустить планировщик: {e}")
+            print("Рассылки активны")
+        except:
+            pass
 
-    print("Бот полностью запущен!")
-    print(f"Админ-панель: {'ВКЛЮЧЕНА' if ENABLE_ADMIN_PANEL else 'ВЫКЛЮЧЕНА'}")
+    print("Запущено успешно:")
+    print("   • Главное меню")
+    if ENABLE_FAQ: print("   • FAQ")
+    print("   • Заявки → Google Sheets")
+    print("   • Техподдержка → топики (в main_menu)")
+    if ENABLE_ADMIN_PANEL: print("   • Админ-панель + рассылки")
+    print("   Оплата отключена в features.py")
+
     await dp.start_polling(bot)
-    
-    
-    if ENABLE_PAYMENT:
-        dp.include_router(payments_router)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
